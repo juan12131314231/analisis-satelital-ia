@@ -1,0 +1,28 @@
+services:
+
+  web:
+    build: .
+    container_name: satelit_app
+
+    expose:
+      - "5000"
+
+    env_file:
+      - .env
+
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: satelit_nginx
+
+    ports:
+    - "8080:80"
+
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+    depends_on:
+      - web
+
+    restart: always

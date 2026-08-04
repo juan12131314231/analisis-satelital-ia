@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SATELIT IA</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ================= MENU ================= -->
+
+    <header>
+
+        <div class="logo">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <span>SATELIT IA</span>
+        </div>
+
+        <nav>
+            <a href="#">Inicio</a>
+            <a href="#">Análisis</a>
+            <a href="#">Acerca</a>
+        </nav>
+
+    </header>
+
+    <!-- ================= HERO ================= -->
+
+    <section class="hero">
+
+        <div class="hero-info">
+
+            <h1>
+                Inteligencia Artificial para
+                <span>Imágenes Satelitales</span>
+            </h1>
+
+            <p>
+                Analiza imágenes satelitales mediante Inteligencia Artificial y
+                detecta vegetación, cuerpos de agua, zonas urbanas,
+                carreteras y suelo seco en segundos.
+            </p>
+
+        </div>
+
+        <div class="hero-image">
+
+            <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1400&auto=format&fit=crop"
+                alt="Tierra desde el espacio">
+
+        </div>
+
+    </section>
+
+    <!-- ================= FORMULARIO ================= -->
+
+    <section class="upload-section">
+
+        <div class="card">
+
+            <h2>
+
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                Subir Imagen
+
+            </h2>
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="imagen"
+                    accept="image/*"
+                    required>
+
+                <button type="submit">
+
+                    <i class="fa-solid fa-robot"></i>
+
+                    Analizar con IA
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <!-- ================= RESULTADO ================= -->
+
+    {% if respuesta %}
+
+    <section class="resultado">
+
+        <div class="resultado-card">
+
+            <h2>
+
+                <i class="fa-solid fa-chart-column"></i>
+
+                Resultado del análisis
+
+            </h2>
+
+            <pre>{{ respuesta }}</pre>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        © 2026 SATELIT IA | Inteligencia Artificial para análisis satelital.
+
+    </footer>
+
+</body>
+
+</html>

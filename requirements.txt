@@ -1,0 +1,6 @@
+opencv-python
+numpy
+Flask
+requests
+python-dotenv
+gunicorn
