@@ -1,5 +1,5 @@
-const CACHE_STATIC_NAME = "satelit-ia-shell-v2";
-const CACHE_DYNAMIC_NAME = "satelit-ia-dynamic-v2";
+const CACHE_STATIC_NAME = "satelit-ia-shell-v3";
+const CACHE_DYNAMIC_NAME = "satelit-ia-dynamic-v3";
 
 const ARCHIVOS_APP_SHELL = [
     "/",
