@@ -4,128 +4,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SATELIT IA</title>
 
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1683ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+
+    <title>SATELIT IA - PWA Análisis Satelital con IA</title>
+
+    <!-- CSS del App Shell -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 
 <body>
 
-    <!-- ================= MENU ================= -->
-
-    <header>
-
-        <div class="logo">
-            <i class="fa-solid fa-satellite-dish"></i>
-            <span>SATELIT IA</span>
+    <!-- ================= PANTALLA SPLASH (SPLASH SCREEN) ================= -->
+    <div id="splash-screen" class="splash-overlay">
+        <div class="splash-content">
+            <div class="splash-icon-wrapper">
+                <img src="/static/icons/icon-192.png" alt="Logo SATELIT IA" class="splash-logo-img">
+                <div class="orbit-ring"></div>
+            </div>
+            <h1>SATELIT <span>IA</span></h1>
+            <p>Sistema Inteligente de Análisis de Imágenes Satelitales (PWA)</p>
+            <div class="splash-progress">
+                <div id="splash-progress-bar" class="splash-progress-bar"></div>
+            </div>
+            <small class="splash-sub">Cargando App Shell, Service Worker y Módulo de Datos...</small>
         </div>
+    </div>
+
+    <!-- ================= BANNER OFFLINE ================= -->
+    <div id="offline-banner" class="offline-banner" style="display: none;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <strong>Modo Sin Conexión (Offline Activo):</strong> La PWA está funcionando mediante el Service Worker y la base de datos local IndexedDB.
+    </div>
+
+    <!-- ================= APP SHELL: HEADER Y NAVEGACIÓN ================= -->
+    <header>
+        <a href="/" class="logo" style="text-decoration: none;">
+            <img src="/static/icons/icon-192.png" alt="Icono" class="header-icon">
+            <span>SATELIT IA</span>
+        </a>
 
         <nav>
-            <a href="#">Inicio</a>
-            <a href="#">Análisis</a>
-            <a href="#">Acerca</a>
+            <a href="/" class="active"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="#seccion-analizador"><i class="fa-solid fa-microchip"></i> Analizador IA</a>
+            <a href="/csr"><i class="fa-solid fa-bolt"></i> Vista CSR</a>
+            <a href="/ssr"><i class="fa-solid fa-server"></i> Vista SSR</a>
+            <a href="#seccion-datos"><i class="fa-solid fa-database"></i> Datos</a>
+            <a href="#seccion-notificaciones"><i class="fa-solid fa-bell"></i> Notificaciones</a>
+            <a href="javascript:void(0)" onclick="mostrarSplashScreen(2200)"><i class="fa-solid fa-rocket"></i> Splash</a>
         </nav>
 
+        <div class="header-actions">
+            <span id="network-status" class="status-pill online">
+                <i class="fa-solid fa-wifi"></i> En línea
+            </span>
+            <button id="btn-instalar-pwa" type="button" class="btn-header-install" onclick="instalarPWA()">
+                <i class="fa-solid fa-download"></i> Instalar App
+            </button>
+        </div>
     </header>
 
-    <!-- ================= HERO ================= -->
-
+    <!-- ================= PANTALLA HOME / HERO ================= -->
     <section class="hero">
-
         <div class="hero-info">
-
+            <div class="pwa-pills-row">
+                <span id="sw-status-badge" class="badge badge-ok">SW Activo</span>
+                <span class="badge badge-info">PWA Instalable</span>
+                <span class="badge badge-purple">CSR + SSR + Offline</span>
+            </div>
             <h1>
                 Inteligencia Artificial para
                 <span>Imágenes Satelitales</span>
             </h1>
-
             <p>
-                Analiza imágenes satelitales mediante Inteligencia Artificial y
-                detecta vegetación, cuerpos de agua, zonas urbanas,
-                carreteras y suelo seco en segundos.
+                Analiza imágenes satelitales mediante Inteligencia Artificial y detecta
+                vegetación, cuerpos de agua, zonas urbanas, carreteras y suelo seco en segundos.
+                Aplicación Web Progresiva integrada con soporte Offline, IndexedDB y Notificaciones.
             </p>
-
+            <div class="hero-cta-group">
+                <a href="#seccion-analizador" class="btn-cta primary">
+                    <i class="fa-solid fa-satellite"></i> Analizar Imagen
+                </a>
+                <a href="/csr" class="btn-cta secondary">
+                    <i class="fa-solid fa-code"></i> Explorar CSR / SSR
+                </a>
+            </div>
         </div>
 
         <div class="hero-image">
-
             <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1400&auto=format&fit=crop"
                 alt="Tierra desde el espacio">
-
         </div>
-
     </section>
 
-    <!-- ================= FORMULARIO ================= -->
-
-    <section class="upload-section">
-
+    <!-- ================= FORMULARIO DE ANÁLISIS CON IA ================= -->
+    <section id="seccion-analizador" class="upload-section">
         <div class="card">
-
             <h2>
-
                 <i class="fa-solid fa-cloud-arrow-up"></i>
-
-                Subir Imagen
-
+                Subir Imagen Satelital para Análisis con IA
             </h2>
+            <p class="section-subtitle">
+                Selecciona una captura satelital. El resultado se mostrará en pantalla, disparará una notificación y se almacenará automáticamente en el Módulo de Datos.
+            </p>
 
             <form method="POST" enctype="multipart/form-data">
-
-                <input
-                    type="file"
-                    name="imagen"
-                    accept="image/*"
-                    required>
-
+                <input type="file" name="imagen" accept="image/*" required>
                 <button type="submit">
-
                     <i class="fa-solid fa-robot"></i>
-
                     Analizar con IA
-
                 </button>
-
             </form>
-
         </div>
-
     </section>
 
-    <!-- ================= RESULTADO ================= -->
-
+    <!-- ================= RESULTADO DEL ANÁLISIS IA ================= -->
     {% if respuesta %}
-
     <section class="resultado">
-
         <div class="resultado-card">
-
             <h2>
-
                 <i class="fa-solid fa-chart-column"></i>
-
-                Resultado del análisis
-
+                Resultado del Análisis Satelital
             </h2>
-
-            <pre>{{ respuesta }}</pre>
-
+            <pre id="resultado-ia-texto">{{ respuesta }}</pre>
         </div>
-
     </section>
-
     {% endif %}
 
-    <!-- ================= FOOTER ================= -->
+    <!-- ================= MÓDULO DE DATOS (API REST + INDEXEDDB OFFLINE) ================= -->
+    <section id="seccion-datos" class="module-section">
+        <div class="module-container">
+            <div class="module-header">
+                <div>
+                    <h2><i class="fa-solid fa-database"></i> Módulo de Datos Satelitales (Online / Offline)</h2>
+                    <p>Almacenamiento híbrido con sincronización entre API REST (<code>/api/datos</code>) y base de datos local <strong>IndexedDB</strong> para funcionamiento sin conexión.</p>
+                </div>
+                <span id="total-registros-badge" class="badge badge-info">Cargando...</span>
+            </div>
 
+            <div class="data-module-grid">
+                <!-- Formulario de Registro de Telemetría -->
+                <div class="data-card">
+                    <h3><i class="fa-solid fa-plus-circle"></i> Registrar Monitoreo Satelital</h3>
+                    <form id="form-nuevo-dato" class="data-form">
+                        <label>Zona o Región Analizada</label>
+                        <input type="text" id="input-zona" placeholder="Ej. Selva Lacandona, Chiapas" required>
+
+                        <label>Coordenadas Geográficas</label>
+                        <input type="text" id="input-coordenadas" placeholder="Ej. 16.8833° N, 91.1167° W">
+
+                        <div class="form-row-4">
+                            <div>
+                                <label>🌿 Veg. (%)</label>
+                                <input type="number" id="input-veg" min="0" max="100" value="60" required>
+                            </div>
+                            <div>
+                                <label>💧 Agua (%)</label>
+                                <input type="number" id="input-agua" min="0" max="100" value="20" required>
+                            </div>
+                            <div>
+                                <label>🏙️ Urbana (%)</label>
+                                <input type="number" id="input-urbana" min="0" max="100" value="10" required>
+                            </div>
+                            <div>
+                                <label>🏜️ Seco (%)</label>
+                                <input type="number" id="input-seco" min="0" max="100" value="10" required>
+                            </div>
+                        </div>
+
+                        <label>Conclusión / Observaciones</label>
+                        <input type="text" id="input-conclusion" placeholder="Ej. Cobertura vegetal estable sin incendios detectados">
+
+                        <button type="submit" class="btn-save-data">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar en Módulo de Datos
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tabla de Historial Satelital -->
+                <div class="data-card table-wrapper">
+                    <div class="table-header-row">
+                        <h3><i class="fa-solid fa-table-list"></i> Historial de Análisis Almacenados</h3>
+                        <button type="button" class="btn-mini-action" onclick="cargarYRenderizarDatos()">
+                            <i class="fa-solid fa-rotate"></i> Actualizar
+                        </button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="sat-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Zona / Coordenadas</th>
+                                    <th>Vegetación</th>
+                                    <th>Agua</th>
+                                    <th>Urbana</th>
+                                    <th>Suelo Seco</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-datos-body">
+                                {% for r in registros %}
+                                <tr>
+                                    <td><strong>#{{ r.id }}</strong></td>
+                                    <td>
+                                        <div class="zona-cell">{{ r.zona }}</div>
+                                        <small class="coord-sub">{{ r.coordenadas }} · {{ r.fecha }}</small>
+                                    </td>
+                                    <td><span class="pill-metric veg">{{ r.vegetacion }}</span></td>
+                                    <td><span class="pill-metric water">{{ r.agua }}</span></td>
+                                    <td><span class="pill-metric urban">{{ r.zona_urbana }}</span></td>
+                                    <td><span class="pill-metric dry">{{ r.suelo_seco }}</span></td>
+                                    <td>
+                                        <button type="button" class="btn-mini-danger" onclick="eliminarRegistro({{ r.id }})">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MÓDULO DE NOTIFICACIONES PUSH / LOCALES ================= -->
+    <section id="seccion-notificaciones" class="module-section">
+        <div class="module-container">
+            <div class="module-header">
+                <div>
+                    <h2><i class="fa-solid fa-bell"></i> Centro de Notificaciones de la PWA</h2>
+                    <p>Integración con la API <code>Notification</code> y el <code>ServiceWorkerRegistration.showNotification()</code> para alertas de análisis satelital.</p>
+                </div>
+                <span id="notif-permission-badge" class="badge badge-warn">Verificando permiso...</span>
+            </div>
+
+            <div class="notif-grid">
+                <div class="data-card">
+                    <h3><i class="fa-solid fa-sliders"></i> Controles de Notificación</h3>
+                    <p class="section-subtitle">
+                        Autoriza el permiso en tu navegador y envía una alerta satelital de prueba para verificar el funcionamiento en escritorio o móvil.
+                    </p>
+                    <div class="notif-buttons">
+                        <button type="button" class="btn-notif-perm" onclick="solicitarPermisoNotificaciones()">
+                            <i class="fa-solid fa-shield-check"></i> 1. Solicitar / Activar Permiso
+                        </button>
+                        <button type="button" class="btn-notif-test" onclick="enviarNotificacionLocal('🛰️ Alerta Satelital SATELIT IA', 'Detección completada: 65% Vegetación, 15% Agua, 10% Zona Urbana en el sector monitoreado.')">
+                            <i class="fa-solid fa-paper-plane"></i> 2. Enviar Notificación de Prueba
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Registro de Alertas Emitidas</h3>
+                    <div id="notif-history-list" class="notif-history-list">
+                        <div class="notif-item">
+                            <div class="notif-item-header">
+                                <strong>🛰️ Sistema de Notificaciones Listo</strong>
+                                <span>Activo</span>
+                            </div>
+                            <p>Presiona "Enviar Notificación de Prueba" o realiza un análisis satelital para recibir una alerta nativa.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= FOOTER DEL APP SHELL ================= -->
     <footer>
-
-        © 2026 SATELIT IA | Inteligencia Artificial para análisis satelital.
-
+        <p>© 2026 SATELIT IA | Aplicación Web Progresiva (PWA) para Análisis Satelital con Inteligencia Artificial.</p>
+        <p class="footer-links">
+            <a href="/">Home</a> ·
+            <a href="/csr">Vista CSR</a> ·
+            <a href="/ssr">Vista SSR</a> ·
+            <a href="/manifest.json" target="_blank">Manifest.json</a> ·
+            <a href="/api/datos" target="_blank">API Datos JSON</a>
+        </p>
     </footer>
+
+    <!-- Script Principal de la PWA -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 </body>
 

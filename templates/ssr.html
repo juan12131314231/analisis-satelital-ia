@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1683ff">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+
+    <title>Vista SSR (Server-Side Rendering) - SATELIT IA</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ================= BANNER OFFLINE ================= -->
+    <div id="offline-banner" class="offline-banner" style="display: none;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <strong>Modo Sin Conexión (Offline Activo):</strong> Esta vista SSR fue pre-almacenada en caché por el Service Worker.
+    </div>
+
+    <!-- ================= APP SHELL: HEADER ================= -->
+    <header>
+        <a href="/" class="logo" style="text-decoration: none;">
+            <img src="/static/icons/icon-192.png" alt="Icono" class="header-icon">
+            <span>SATELIT IA</span>
+        </a>
+
+        <nav>
+            <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="/csr"><i class="fa-solid fa-bolt"></i> Vista CSR</a>
+            <a href="/ssr" class="active"><i class="fa-solid fa-server"></i> Vista SSR</a>
+            <a href="/#seccion-datos"><i class="fa-solid fa-database"></i> Datos</a>
+            <a href="/#seccion-notificaciones"><i class="fa-solid fa-bell"></i> Notificaciones</a>
+        </nav>
+
+        <div class="header-actions">
+            <span id="network-status" class="status-pill online">
+                <i class="fa-solid fa-wifi"></i> En línea
+            </span>
+            <button id="btn-instalar-pwa" type="button" class="btn-header-install" onclick="instalarPWA()">
+                <i class="fa-solid fa-download"></i> Instalar App
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero hero-compact">
+            <div class="hero-info" style="width: 100%;">
+                <div class="pwa-pills-row">
+                    <span class="badge badge-purple">Server-Side Rendering (SSR)</span>
+                    <span class="badge badge-ok">Flask + Jinja2</span>
+                </div>
+                <h1>{{ datos.titulo }}</h1>
+                <p>{{ datos.descripcion }}</p>
+            </div>
+        </section>
+
+        <section class="upload-section">
+            <div class="card" style="width: 90%; max-width: 950px;">
+                <h2><i class="fa-solid fa-server"></i> Resultado Renderizado desde el Servidor (SSR)</h2>
+                <p class="section-subtitle">
+                    Última zona procesada en el servidor: <strong>{{ datos.zona_actual }}</strong> ({{ datos.fecha_actual }})
+                </p>
+
+                <div class="metrics-grid">
+                    <div class="metric-box veg-box">
+                        <span class="metric-label">🌿 Vegetación</span>
+                        <strong class="metric-value">{{ datos.vegetacion }}</strong>
+                    </div>
+                    <div class="metric-box water-box">
+                        <span class="metric-label">💧 Agua</span>
+                        <strong class="metric-value">{{ datos.agua }}</strong>
+                    </div>
+                    <div class="metric-box urban-box">
+                        <span class="metric-label">🏙️ Zona Urbana</span>
+                        <strong class="metric-value">{{ datos.zona_urbana }}</strong>
+                    </div>
+                    <div class="metric-box dry-box">
+                        <span class="metric-label">🏜️ Suelo Seco</span>
+                        <strong class="metric-value">{{ datos.suelo_seco }}</strong>
+                    </div>
+                </div>
+
+                <hr class="divider-line">
+
+                <h3 style="text-align: left; margin-bottom: 15px;">
+                    <i class="fa-solid fa-database"></i> Historial Pre-renderizado en HTML por Jinja2 (SSR)
+                </h3>
+                <div class="csr-records-list">
+                    {% for item in registros %}
+                    <div class="csr-record-item">
+                        <div class="csr-record-head">
+                            <strong>#{{ item.id }} - {{ item.zona }}</strong>
+                            <span class="badge badge-purple">{{ item.origen }}</span>
+                        </div>
+                        <p class="csr-record-sub">{{ item.coordenadas }} | Fecha: {{ item.fecha }}</p>
+                        <p class="csr-record-desc">{{ item.conclusion }}</p>
+                        <div class="csr-record-pills">
+                            <span class="pill-metric veg">Veg: {{ item.vegetacion }}</span>
+                            <span class="pill-metric water">Agua: {{ item.agua }}</span>
+                            <span class="pill-metric urban">Urbana: {{ item.zona_urbana }}</span>
+                            <span class="pill-metric dry">Seco: {{ item.suelo_seco }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 SATELIT IA | Vista SSR (Server-Side Rendering) integrada en la PWA.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+
+</html>

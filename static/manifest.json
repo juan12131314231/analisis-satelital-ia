@@ -1,0 +1,63 @@
+{
+    "id": "/",
+    "name": "SATELIT IA - Análisis Satelital con Inteligencia Artificial",
+    "short_name": "SATELIT IA",
+    "description": "Aplicación Web Progresiva (PWA) para el análisis de imágenes satelitales mediante Inteligencia Artificial con soporte Offline, CSR, SSR, Módulo de Datos y Notificaciones.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#071426",
+    "theme_color": "#1683ff",
+    "orientation": "portrait-primary",
+    "lang": "es-MX",
+    "categories": ["education", "productivity", "utilities"],
+    "icons": [
+        {
+            "src": "/static/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/static/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Inicio y Analizador IA",
+            "short_name": "Inicio",
+            "description": "Subir imagen satelital y consultar datos",
+            "url": "/",
+            "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Vista CSR (Client-Side)",
+            "short_name": "CSR",
+            "description": "Renderizado del lado del cliente",
+            "url": "/csr",
+            "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Vista SSR (Server-Side)",
+            "short_name": "SSR",
+            "description": "Renderizado del lado del servidor",
+            "url": "/ssr",
+            "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+        }
+    ]
+}

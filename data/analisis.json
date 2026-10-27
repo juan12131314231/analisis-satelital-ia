@@ -1,0 +1,50 @@
+[
+    {
+        "id": 4,
+        "zona": "Parque Nacional Cumbres de Monterrey",
+        "coordenadas": "25.6167° N, 100.2833° W",
+        "fecha": "2026-10-26 18:41",
+        "vegetacion": "72%",
+        "agua": "10%",
+        "zona_urbana": "8%",
+        "suelo_seco": "10%",
+        "conclusion": "Prueba automatizada del módulo de datos.",
+        "origen": "Módulo de Datos PWA"
+    },
+    {
+        "id": 1,
+        "zona": "Reserva de la Biosfera Calakmul, MX",
+        "coordenadas": "18.1054° N, 89.8108° W",
+        "fecha": "2026-10-24 14:20",
+        "vegetacion": "78%",
+        "agua": "8%",
+        "zona_urbana": "4%",
+        "suelo_seco": "10%",
+        "conclusion": "Alta densidad de cobertura forestal húmeda sin indicios recientes de deforestación crítica.",
+        "origen": "Satélite Sentinel-2"
+    },
+    {
+        "id": 2,
+        "zona": "Cuenca del Valle de México, MX",
+        "coordenadas": "19.4326° N, 99.1332° W",
+        "fecha": "2026-10-25 11:05",
+        "vegetacion": "22%",
+        "agua": "6%",
+        "zona_urbana": "58%",
+        "suelo_seco": "14%",
+        "conclusion": "Predominio de mancha urbana densa e infraestructura vial; se recomienda ampliar áreas verdes.",
+        "origen": "Satélite Landsat-9"
+    },
+    {
+        "id": 3,
+        "zona": "Sistema Lagunar de Alvarado, VER",
+        "coordenadas": "18.7686° N, 95.7589° W",
+        "fecha": "2026-10-26 09:40",
+        "vegetacion": "48%",
+        "agua": "35%",
+        "zona_urbana": "7%",
+        "suelo_seco": "10%",
+        "conclusion": "Equilibrio hidrológico estable con presencia de manglares saludables en la ribera.",
+        "origen": "Análisis IA"
+    }
+]
