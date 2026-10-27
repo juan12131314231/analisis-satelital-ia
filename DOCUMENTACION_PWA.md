@@ -150,3 +150,87 @@ A continuación se presenta la matriz de pruebas ejecutadas para verificar que l
 
 - **Repositorio de Código Fuente (GitHub):** [https://github.com/juan12131314231/analisis-satelital-ia](https://github.com/juan12131314231/analisis-satelital-ia)
 - **URL de la Aplicación Publicada (HTTPS):** `https://satelit-ia-pwa.onrender.com` *(Reemplazar con la URL exacta asignada por Render/Railway al finalizar el despliegue de tu cuenta)*.
+
+---
+
+# Práctica: Notificaciones Push y Acceso a Características Nativas del Dispositivo
+
+**Objetivo:** Programar notificaciones push y el acceso a características nativas del dispositivo (Geolocalización GPS y Cámara) desde la PWA con manejo explícito de permisos (`granted`, `denied`, `prompt`).
+
+---
+
+## Paso 1. Explicación del Uso de las Notificaciones Push en una PWA y su Flujo de Suscripción
+
+### 1.1. ¿Para qué sirven las Notificaciones Push en una PWA?
+Las notificaciones Push permiten a una Aplicación Web Progresiva mantener informado al usuario en tiempo real —incluso cuando la pestaña del navegador está cerrada o la aplicación se encuentra en segundo plano— gracias a que el **Service Worker** se ejecuta en un hilo independiente del DOM principal. En el caso de estudio **SATELIT IA**, se utilizan para:
+- Alertar cuando concluye el procesamiento de una imagen satelital con Inteligencia Artificial.
+- Confirmar la captura de coordenadas GPS o la sincronización en segundo plano de datos guardados en modo *Offline*.
+
+### 1.2. Arquitectura y Flujo de Suscripción Push (Estándar Web Push + VAPID)
+El ciclo de vida de una notificación Push en una PWA consta de **4 etapas**:
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario / Navegador
+    participant SW as Service Worker (PushManager)
+    participant PS as Servicio Push (FCM / Mozilla)
+    participant B as Backend Flask (SATELIT IA)
+
+    U->>U: 1. Notification.requestPermission() -> "granted"
+    U->>B: 2. GET /api/push/vapid-public-key
+    B-->>U: Retorna Llave Pública VAPID
+    U->>SW: 3. pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })
+    SW->>PS: Solicita Endpoint único y llaves de cifrado (p256dh, auth)
+    PS-->>SW: Devuelve objeto PushSubscription
+    U->>B: 4. POST /api/push/subscribe (Guarda PushSubscription JSON)
+    B->>SW: 5. Evento Push / POST /api/push/test
+    SW->>U: 6. self.registration.showNotification(title, options)
+```
+
+1. **Solicitud de Permiso (`Notification.requestPermission()`)**: El navegador solicita autorización explícita al usuario (`default` $\rightarrow$ `granted` o `denied`).
+2. **Obtención de Llave VAPID y Suscripción (`PushManager.subscribe()`)**: Con el permiso concedido, la PWA obtiene la llave pública VAPID del servidor (`GET /api/push/vapid-public-key`), la convierte a `Uint8Array` (`urlBase64ToUint8Array`) e invoca `registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })`.
+3. **Registro del Endpoint en el Servidor (`POST /api/push/subscribe`)**: El navegador genera un objeto `PushSubscription` que contiene un `endpoint` único del proveedor Push del navegador y las llaves criptográficas (`p256dh` y `auth`). Este objeto se envía al backend Flask y se visualiza en pantalla dentro de `#push-subscription-json`.
+4. **Envío y Recepción en el Service Worker (`push` y `showNotification`)**: Cuando el servidor emite un mensaje Push (`/api/push/test` o evento `push` en `static/js/sw.js`), el Service Worker despierta y ejecuta `self.registration.showNotification()`, mostrando la alerta nativa del sistema operativo.
+
+---
+
+## Paso 2. Implementación de la Solicitud de Permiso y Envío de Notificación Push de Prueba
+
+La implementación se realizó en tres archivos principales:
+- **Frontend (`static/js/app.js`)**:
+  - `solicitarPermisoNotificaciones()`: Invoca `await Notification.requestPermission()` y actualiza el estado visual (`#notif-permission-badge` y `#notif-permission-feedback`).
+  - `suscribirUsuarioPush()`: Consulta `/api/push/vapid-public-key`, suscribe el `ServiceWorkerRegistration.pushManager`, envía la suscripción a `POST /api/push/subscribe` y muestra el JSON resultante en la interfaz.
+  - `dispararPushPruebaServidor()`: Envía una petición a `POST /api/push/test` y dispara la notificación nativa mediante `ServiceWorkerRegistration.showNotification()` con vibración (`[200, 100, 200]`), ícono satelital (`/static/icons/icon-192.png`) y registro en la bitácora.
+- **Service Worker (`static/js/sw.js`)**:
+  - Escuchador `self.addEventListener("push", ...)`: Procesa el payload JSON entrante y llama a `self.registration.showNotification(...)`.
+  - Escuchador `self.addEventListener("notificationclick", ...)`: Cierra la notificación y enfoca o abre la ventana de la PWA (`clients.openWindow`).
+- **Backend (`app.py`)**:
+  - Rutas `/api/push/vapid-public-key` (`GET`), `/api/push/subscribe` (`POST`) y `/api/push/test` (`POST`).
+
+---
+
+## Paso 3. Acceso a Características Nativas del Dispositivo Respetando los Permisos
+
+En la sección **`#seccion-hardware` ("Acceso a Características Nativas del Dispositivo")** de `templates/index.html` y en la sección 8 de `static/js/app.js`, se integraron **dos APIs de hardware nativo**:
+
+### 3.1. Característica Nativa 1: Geolocalización GPS (`navigator.geolocation`)
+- **Función**: `obtenerUbicacionNativa()` en `static/js/app.js`.
+- **Implementación**: Utiliza `navigator.geolocation.getCurrentPosition(exito, error, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 })` junto con la API de permisos `navigator.permissions.query({ name: "geolocation" })`.
+- **Integración con el caso de estudio**: Al obtener la latitud, longitud y precisión en metros, permite pulsar **"Enviar Coordenadas al Módulo de Datos"** (`usarCoordenadasEnFormulario()`), rellenando automáticamente las coordenadas geográficas del análisis satelital y disparando una notificación de confirmación.
+
+### 3.2. Característica Nativa 2: Cámara del Dispositivo (`navigator.mediaDevices.getUserMedia`)
+- **Funciones**: `activarCamaraNativa()`, `capturarFotoCamara()` y `detenerCamaraNativa()` en `static/js/app.js`.
+- **Implementación**: Solicita acceso de video mediante `navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })`, proyecta el flujo en tiempo real en `<video id="camera-video">`, captura el fotograma en `<canvas id="camera-canvas">` y lo convierte mediante `canvas.toBlob()` y `DataTransfer` en un archivo `captura_camara_pwa.png` que se carga automáticamente en el formulario del **Analizador con IA**.
+
+---
+
+## Paso 4. Verificación del Comportamiento cuando el Usuario Concede o Niega los Permisos
+
+Se implementó el monitoreo reactivo (`navigator.permissions.query`) y cajas de estado visual (`#notif-permission-feedback`, `#geo-permission-feedback`, `#cam-permission-feedback`) que verifican ambos escenarios sin romper la ejecución de la PWA:
+
+| Característica / API | Escenario A: Usuario CONCEDE el Permiso (`granted`) | Escenario B: Usuario NIEGA el Permiso (`denied` / Error) |
+| :--- | :--- | :--- |
+| **Notificaciones Push (`Notification` / `PushManager`)** | El badge cambia a verde (`Permiso Concedido (granted)`). Se habilita la creación del objeto `PushSubscription` con llave VAPID y el Service Worker muestra las notificaciones nativas del sistema operativo. | El badge cambia a rojo (`Permiso Denegado (denied)`). La PWA captura el bloqueo sin lanzar excepciones fatales, informa que no se puede suscribir al `PushManager` y redirige todas las alertas a la bitácora visual interna y mensajes *Toast*. |
+| **Geolocalización GPS (`navigator.geolocation`)** | El badge cambia a verde (`Permiso: Concedido`). Se despliega la tarjeta `#geo-result-card` con Latitud, Longitud, Precisión en metros ($\pm\text{m}$) y habilita el autocompletado hacia el Módulo de Datos Satelitales. | Se captura el código `error.code === 1 (PERMISSION_DENIED)`. El badge cambia a rojo (`Permiso: Denegado`), se oculta la tarjeta de lectura GPS, se muestra una alerta explicativa y se mantiene habilitada la escritura manual de coordenadas en el formulario. |
+| **Cámara del Dispositivo (`MediaDevices.getUserMedia`)** | El badge cambia a verde (`Permiso: Concedido`). Se inicia el `MediaStream` en el elemento `<video>`, permitiendo capturar una fotografía en `<canvas>` e inyectarla directamente en el analizador de IA. | Se captura la excepción `NotAllowedError` / `PermissionDeniedError` en el bloque `try/catch`. El badge cambia a rojo, el visor permanece apagado de forma segura y la PWA mantiene disponible el botón tradicional `<input type="file">` para subir imágenes desde el almacenamiento local. |
+

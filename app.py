@@ -554,6 +554,54 @@ def eliminar_dato(registro_id):
 
 
 # ============================================================
+# API DE SUSCRIPCIÓN Y NOTIFICACIONES PUSH (VAPID / PUSH FLOW)
+# ============================================================
+
+VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U"
+SUSCRIPCIONES_PUSH = []
+
+
+@app.route("/api/push/vapid-public-key", methods=["GET"])
+def obtener_vapid_key():
+    return jsonify({
+        "publicKey": VAPID_PUBLIC_KEY
+    })
+
+
+@app.route("/api/push/subscribe", methods=["POST"])
+def suscribir_push():
+    suscripcion = request.get_json(silent=True) or {}
+    SUSCRIPCIONES_PUSH.append({
+        "suscripcion": suscripcion,
+        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+    return jsonify({
+        "status": "subscribed",
+        "mensaje": "Suscripción Push (PushSubscription) registrada exitosamente en el servidor.",
+        "total_suscritos": len(SUSCRIPCIONES_PUSH),
+        "endpoint": suscripcion.get("endpoint", "PushManagerLocalEndpoint")
+    }), 201
+
+
+@app.route("/api/push/test", methods=["POST"])
+def enviar_push_prueba():
+    cuerpo = request.get_json(silent=True) or {}
+    payload = {
+        "title": cuerpo.get("title", "🛰️ SATELIT IA - Notificación Push de Prueba"),
+        "body": cuerpo.get("body", "Alerta Push recibida vía Service Worker: Telemetría satelital procesada exitosamente."),
+        "icon": "/static/icons/icon-192.png",
+        "badge": "/static/icons/icon-192.png",
+        "timestamp": datetime.now().strftime("%H:%M:%S"),
+        "url": "/"
+    }
+    return jsonify({
+        "status": "sent",
+        "payload": payload
+    })
+
+
+
+# ============================================================
 # MANIFEST DE LA PWA
 # ============================================================
 

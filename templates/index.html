@@ -59,7 +59,8 @@
             <a href="/csr"><i class="fa-solid fa-bolt"></i> Vista CSR</a>
             <a href="/ssr"><i class="fa-solid fa-server"></i> Vista SSR</a>
             <a href="#seccion-datos"><i class="fa-solid fa-database"></i> Datos</a>
-            <a href="#seccion-notificaciones"><i class="fa-solid fa-bell"></i> Notificaciones</a>
+            <a href="#seccion-notificaciones"><i class="fa-solid fa-bell"></i> Push</a>
+            <a href="#seccion-hardware"><i class="fa-solid fa-location-crosshairs"></i> GPS / Cámara</a>
             <a href="javascript:void(0)" onclick="mostrarSplashScreen(2200)"><i class="fa-solid fa-rocket"></i> Splash</a>
         </nav>
 
@@ -238,43 +239,136 @@
         </div>
     </section>
 
-    <!-- ================= MÓDULO DE NOTIFICACIONES PUSH / LOCALES ================= -->
+    <!-- ================= MÓDULO DE NOTIFICACIONES PUSH Y FLUJO DE SUSCRIPCIÓN ================= -->
     <section id="seccion-notificaciones" class="module-section">
         <div class="module-container">
             <div class="module-header">
                 <div>
-                    <h2><i class="fa-solid fa-bell"></i> Centro de Notificaciones de la PWA</h2>
-                    <p>Integración con la API <code>Notification</code> y el <code>ServiceWorkerRegistration.showNotification()</code> para alertas de análisis satelital.</p>
+                    <h2><i class="fa-solid fa-bell"></i> Notificaciones Push y Flujo de Suscripción (VAPID / Service Worker)</h2>
+                    <p>Implementación completa de solicitud de permisos (<code>Notification.requestPermission</code>), suscripción al <code>PushManager</code> y envío de notificación Push de prueba.</p>
                 </div>
                 <span id="notif-permission-badge" class="badge badge-warn">Verificando permiso...</span>
             </div>
 
             <div class="notif-grid">
                 <div class="data-card">
-                    <h3><i class="fa-solid fa-sliders"></i> Controles de Notificación</h3>
+                    <h3><i class="fa-solid fa-sliders"></i> Flujo de Permiso, Suscripción y Envío Push</h3>
                     <p class="section-subtitle">
-                        Autoriza el permiso en tu navegador y envía una alerta satelital de prueba para verificar el funcionamiento en escritorio o móvil.
+                        Sigue los 3 pasos del ciclo de vida Push o verifica cómo responde la PWA cuando se concede (<code>granted</code>) o se niega (<code>denied</code>) el permiso.
                     </p>
                     <div class="notif-buttons">
                         <button type="button" class="btn-notif-perm" onclick="solicitarPermisoNotificaciones()">
-                            <i class="fa-solid fa-shield-check"></i> 1. Solicitar / Activar Permiso
+                            <i class="fa-solid fa-shield-check"></i> Paso 1: Solicitar Permiso de Notificaciones
                         </button>
-                        <button type="button" class="btn-notif-test" onclick="enviarNotificacionLocal('🛰️ Alerta Satelital SATELIT IA', 'Detección completada: 65% Vegetación, 15% Agua, 10% Zona Urbana en el sector monitoreado.')">
-                            <i class="fa-solid fa-paper-plane"></i> 2. Enviar Notificación de Prueba
+                        <button type="button" class="btn-push-sub" onclick="suscribirUsuarioPush()">
+                            <i class="fa-solid fa-key"></i> Paso 2: Suscribir al Servicio Push (PushManager)
                         </button>
+                        <button type="button" class="btn-notif-test" onclick="dispararPushPruebaServidor()">
+                            <i class="fa-solid fa-paper-plane"></i> Paso 3: Enviar Notificación Push de Prueba
+                        </button>
+                    </div>
+
+                    <div id="notif-permission-feedback" class="permission-feedback-box info-state">
+                        <strong>Estado de Permiso Push:</strong> Esperando interacción del usuario para verificar concesión (<code>granted</code>) o bloqueo (<code>denied</code>).
+                    </div>
+
+                    <div class="push-sub-box">
+                        <small><strong>Objeto de Suscripción Push (Endpoint / VAPID):</strong></small>
+                        <pre id="push-subscription-json" class="code-mini">Sin suscripción activa aún. Presiona el Paso 2.</pre>
                     </div>
                 </div>
 
                 <div class="data-card">
-                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Registro de Alertas Emitidas</h3>
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Bitácora de Alertas Push Emitidas</h3>
                     <div id="notif-history-list" class="notif-history-list">
                         <div class="notif-item">
                             <div class="notif-item-header">
-                                <strong>🛰️ Sistema de Notificaciones Listo</strong>
-                                <span>Activo</span>
+                                <strong>🛰️ Sistema Push Inicializado</strong>
+                                <span>Listo</span>
                             </div>
-                            <p>Presiona "Enviar Notificación de Prueba" o realiza un análisis satelital para recibir una alerta nativa.</p>
+                            <p>Autoriza el permiso (Paso 1), genera la suscripción (Paso 2) y envía una notificación Push de prueba (Paso 3).</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= ACCESO A CARACTERÍSTICAS NATIVAS DEL DISPOSITIVO (GPS Y CÁMARA) ================= -->
+    <section id="seccion-hardware" class="module-section">
+        <div class="module-container">
+            <div class="module-header">
+                <div>
+                    <h2><i class="fa-solid fa-microchip"></i> Acceso a Características Nativas del Dispositivo y Manejo de Permisos</h2>
+                    <p>Integración con las APIs nativas de <strong>Geolocalización GPS</strong> (<code>navigator.geolocation</code>) y <strong>Cámara del Dispositivo</strong> (<code>navigator.mediaDevices.getUserMedia</code>) respetando los estados de permiso (Concedido / Denegado).</p>
+                </div>
+                <span class="badge badge-purple">Hardware Nativo PWA</span>
+            </div>
+
+            <div class="notif-grid">
+                <!-- Característica Nativa 1: Geolocalización GPS -->
+                <div class="data-card">
+                    <div class="table-header-row">
+                        <h3><i class="fa-solid fa-location-crosshairs"></i> 1. Geolocalización Nativa (GPS)</h3>
+                        <span id="geo-permission-badge" class="badge badge-warn">Permiso: Pendiente</span>
+                    </div>
+                    <p class="section-subtitle">
+                        Obtiene las coordenadas reales de tu dispositivo para georreferenciar el análisis satelital y autocompletar el Módulo de Datos.
+                    </p>
+
+                    <div class="notif-buttons">
+                        <button type="button" class="btn-geo-action" onclick="obtenerUbicacionNativa()">
+                            <i class="fa-solid fa-compass"></i> Obtener Ubicación GPS del Dispositivo
+                        </button>
+                    </div>
+
+                    <div id="geo-permission-feedback" class="permission-feedback-box info-state">
+                        <strong>Manejo de Permiso GPS:</strong> Al pulsar el botón, el navegador solicitará permiso de ubicación. Si se concede, se mostrarán latitud, longitud y precisión; si se niega (<code>PERMISSION_DENIED</code>), se mostrará una alerta controlada.
+                    </div>
+
+                    <div id="geo-result-card" class="native-result-box" style="display: none;">
+                        <p><strong>Latitud:</strong> <span id="geo-lat">--</span></p>
+                        <p><strong>Longitud:</strong> <span id="geo-lon">--</span></p>
+                        <p><strong>Precisión GPS:</strong> <span id="geo-acc">--</span> metros</p>
+                        <p><strong>Coordenadas Formateadas:</strong> <code id="geo-formatted">--</code></p>
+                        <button type="button" class="btn-mini-action" style="margin-top: 10px; width: 100%;" onclick="usarCoordenadasEnFormulario()">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Enviar Coordenadas al Módulo de Datos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Característica Nativa 2: Cámara del Dispositivo -->
+                <div class="data-card">
+                    <div class="table-header-row">
+                        <h3><i class="fa-solid fa-camera"></i> 2. Cámara Nativa del Dispositivo</h3>
+                        <span id="cam-permission-badge" class="badge badge-warn">Permiso: Pendiente</span>
+                    </div>
+                    <p class="section-subtitle">
+                        Accede al sensor de cámara mediante <code>MediaDevices.getUserMedia()</code> para capturar imágenes de terreno o satelitales y enviarlas al analizador IA.
+                    </p>
+
+                    <div class="cam-controls-row">
+                        <button type="button" class="btn-cam-start" onclick="activarCamaraNativa()">
+                            <i class="fa-solid fa-video"></i> Activar Cámara
+                        </button>
+                        <button type="button" class="btn-cam-snap" onclick="capturarFotoCamara()">
+                            <i class="fa-solid fa-camera-retro"></i> Capturar Foto
+                        </button>
+                        <button type="button" class="btn-cam-stop" onclick="detenerCamaraNativa()">
+                            <i class="fa-solid fa-stop"></i> Apagar
+                        </button>
+                    </div>
+
+                    <div id="cam-permission-feedback" class="permission-feedback-box info-state">
+                        <strong>Manejo de Permiso de Cámara:</strong> Respeta la decisión del usuario. Si se niega (<code>NotAllowedError</code>), desactiva el visor sin bloquear la aplicación.
+                    </div>
+
+                    <div class="camera-preview-container">
+                        <video id="camera-video" autoplay playsinline muted style="display: none;"></video>
+                        <canvas id="camera-canvas" width="640" height="400" style="display: none;"></canvas>
+                        <p id="camera-placeholder-text" class="camera-placeholder">
+                            <i class="fa-solid fa-camera-slash"></i> Visor de cámara inactivo. Presiona "Activar Cámara" para solicitar permiso.
+                        </p>
                     </div>
                 </div>
             </div>
